@@ -4,11 +4,12 @@ import { ArrowLeft, Sun, Moon } from "lucide-react";
 
 export default function GameSetupPage({ theme, onBack, onStart, toggleTheme }) {
 	const [players, setPlayers] = useState(1);
-	const [questions, setQuestions] = useState(10);
-	const [timer, setTimer] = useState(10);
+	const [questions, setQuestions] = useState(5);
+	const [timer, setTimer] = useState(5);
 
 	const startGame = () => {
-		onStart({ players, questions, timer });
+		const settings = { players, questions, timer };
+		onStart(settings); // 回傳給 EntryPage
 	};
 
 	return (
