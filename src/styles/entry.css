@@ -74,11 +74,11 @@ select {
 }
 
 .entry-page.dark .start-button {
-    background-color: #eb740c;
-    color: white;
+	background-color: #eb740c;
+	color: white;
 }
 .entry-page.dark .start-button:hover {
-    background-color: #ff7700;
+	background-color: #ff7700;
 }
 .mode-select {
 	padding: 0.5rem;
@@ -171,4 +171,52 @@ select {
 .centered-title {
 	justify-content: center;
 	gap: 1rem;
+}
+
+input[type="range"] {
+	width: 100%;
+	height: 6px;
+	background: #ddd;
+	border-radius: 5px;
+	appearance: none;
+	cursor: pointer;
+	outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background-color: #707171;
+	border: 2px solid white;
+	box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+	transition: background-color 0.3s ease;
+}
+
+.dark input[type="range"] {
+	background: #444;
+}
+
+.dark input[type="range"]::-webkit-slider-thumb {
+	background-color: #f97316;
+	border: 2px solid #1f2937;
+}
+
+.w-full {
+	width: 100%;
+}
+
+.top-bar {
+	position: relative;
+	width: 100%;
+	max-width: 600px;
+	margin-bottom: 2rem;
+	text-align: center;
+	height: 2.5rem; /* 給定高度讓 icon 對齊垂直中線 */
+}
+
+.title {
+	font-size: 1.75rem;
+	font-weight: bold;
 }
