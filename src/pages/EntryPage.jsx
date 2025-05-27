@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import "../styles/entry.css";
 import { Sun, Moon, ChevronDown } from "lucide-react";
 import GameSetupPage from "./GameSetupPage.jsx";
+import GamePage from "./GamePage.jsx";
+import ResultPage from "./ResultPage.jsx";
 
 export default function EntryPage() {
 	const [theme, setTheme] = useState("light");
 	const [mode, setMode] = useState("");
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [step, setStep] = useState(1);
+	const [gameSettings, setGameSettings] = useState(null);
+	const [finalScore, setFinalScore] = useState(null);
 
 	const toggleTheme = () => {
 		setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -19,9 +23,23 @@ export default function EntryPage() {
 	};
 
 	const handleStart = (settings) => {
-		console.log("最終設定：", settings);
-		// TODO: 導入遊戲頁面
+		setGameSettings(settings);
+		setStep(3); // 進入 GamePage
 	};
+
+	if (finalScore !== null) {
+		return (
+			<ResultPage
+				score={finalScore}
+				total={gameSettings.questions}
+				theme={theme}
+				onRestart={() => {
+					setFinalScore(null);
+					setStep(1); // 回首頁
+				}}
+			/>
+		);
+	}
 
 	if (step === 2) {
 		return (
@@ -30,6 +48,23 @@ export default function EntryPage() {
 				toggleTheme={toggleTheme}
 				onBack={() => setStep(1)}
 				onStart={handleStart}
+			/>
+		);
+	}
+
+	if (step === 3) {
+		return (
+			<GamePage
+				theme={theme}
+				settings={gameSettings}
+				onFinish={(score) => {
+					setFinalScore(score);
+				}}
+				onBackToHome={() => {
+					setFinalScore(null);
+					setStep(1); // 回首頁
+				}}
+				onToggleTheme={toggleTheme}
 			/>
 		);
 	}
