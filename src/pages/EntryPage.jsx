@@ -4,6 +4,7 @@ import { Sun, Moon, ChevronDown } from "lucide-react";
 import GameSetupPage from "./GameSetupPage.jsx";
 import GamePage from "./GamePage.jsx";
 import ResultPage from "./ResultPage.jsx";
+import MultiplayerEntryPage from "./MultiplayerEntryPage.jsx";
 import MultiplayerLobby from "./MultiplayerLobby.jsx";
 
 export default function EntryPage() {
@@ -17,9 +18,17 @@ export default function EntryPage() {
 	const [socket, setSocket] = useState(null);
 	const [multiplayerSettings, setMultiplayerSettings] = useState(null);
 	const [multiplayerResults, setMultiplayerResults] = useState(null);
+	const [roomCode, setRoomCode] = useState("");
+	const [isRoomCreator, setIsRoomCreator] = useState(false);
 
 	const toggleTheme = () => {
-		setTheme((prev) => (prev === "light" ? "dark" : "light"));
+		if (theme === "light") {
+			setTheme("dark");
+			document.documentElement.classList.add("dark");
+		} else {
+			setTheme("light");
+			document.documentElement.classList.remove("dark");
+		}
 	};
 
 	const handleModeSelect = (value) => {
@@ -30,6 +39,22 @@ export default function EntryPage() {
 	const handleStart = (settings) => {
 		setGameSettings(settings);
 		setStep(3);
+	};
+
+	const handleCreateRoom = (nickname) => {
+		setNickname(nickname);
+		setIsRoomCreator(true);
+		// 生成隨機房間代碼 (6位英文數字組合)
+		const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+		setRoomCode(randomCode);
+		setStep(3); // 進入房間大廳
+	};
+
+	const handleJoinRoom = (nickname, roomCode) => {
+		setNickname(nickname);
+		setRoomCode(roomCode);
+		setIsRoomCreator(false);
+		setStep(3); // 進入房間大廳
 	};
 
 	// 多人模式結算畫面
@@ -94,26 +119,49 @@ export default function EntryPage() {
 		);
 	}
 
-	// 多人遊戲大廳
+	// 多人遊戲入口頁面
 	if (step === 2 && mode === "multiplayer") {
 		return (
-			<MultiplayerLobby
+			<MultiplayerEntryPage
 				theme={theme}
 				onBack={() => setStep(1)}
 				onToggleTheme={toggleTheme}
-				onJoinGame={(nicknameFromLobby, socketInstance, settings) => {
-					setNickname(nicknameFromLobby);
+				onCreateRoom={handleCreateRoom}
+				onJoinRoom={handleJoinRoom}
+			/>
+		);
+	}
+
+	// 多人遊戲房間大廳
+	if (step === 3 && mode === "multiplayer") {
+		return (
+			<MultiplayerLobby
+				theme={theme}
+				onBack={() => setStep(2)} // 返回到多人入口頁面，而非首頁
+				onToggleTheme={toggleTheme}
+				nickname={nickname}
+				roomCode={roomCode}
+				isCreator={isRoomCreator} // 確保這個屬性名稱與 MultiplayerLobby 組件接受的一致
+				onJoinGame={(
+					nicknameFromLobby,
+					socketInstance,
+					settings,
+					roomCodeFromLobby
+				) => {
+					// 確保所有參數都正確傳遞
+					setNickname(nicknameFromLobby || nickname);
 					setSocket(socketInstance);
 					setMultiplayerSettings(settings);
-					console.log("✅ 成功進入多人遊戲，暱稱：", nicknameFromLobby);
-					setStep(3); // 進入多人遊戲頁面
+					setRoomCode(roomCodeFromLobby || roomCode);
+					console.log("進入遊戲頁面", settings);
+					setStep(4); // 進入遊戲頁面
 				}}
 			/>
 		);
 	}
 
 	// 多人遊戲進行中
-	if (step === 3 && mode === "multiplayer") {
+	if (step === 4 && mode === "multiplayer") {
 		return (
 			<GamePage
 				theme={theme}
@@ -121,6 +169,7 @@ export default function EntryPage() {
 					...multiplayerSettings,
 					isMultiplayer: true,
 					nickname,
+					roomCode,
 				}}
 				socket={socket}
 				onFinish={(score, playerData) => {
