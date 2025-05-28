@@ -4,7 +4,6 @@ import { Sun, Moon, ChevronDown } from "lucide-react";
 import GameSetupPage from "./GameSetupPage.jsx";
 import GamePage from "./GamePage.jsx";
 import ResultPage from "./ResultPage.jsx";
-// 多人頁面預留（之後我們會建立）
 import MultiplayerLobby from "./MultiplayerLobby.jsx";
 
 export default function EntryPage() {
@@ -14,6 +13,10 @@ export default function EntryPage() {
 	const [step, setStep] = useState(1);
 	const [gameSettings, setGameSettings] = useState(null);
 	const [finalScore, setFinalScore] = useState(null);
+	const [nickname, setNickname] = useState("");
+	const [socket, setSocket] = useState(null);
+	const [multiplayerSettings, setMultiplayerSettings] = useState(null);
+	const [multiplayerResults, setMultiplayerResults] = useState(null);
 
 	const toggleTheme = () => {
 		setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -29,7 +32,24 @@ export default function EntryPage() {
 		setStep(3);
 	};
 
-	// 結算畫面
+	// 多人模式結算畫面
+	if (multiplayerResults !== null) {
+		return (
+			<ResultPage
+				score={multiplayerResults.score}
+				total={multiplayerResults.total}
+				theme={theme}
+				isMultiplayer={true}
+				playerRanking={multiplayerResults.players}
+				onRestart={() => {
+					setMultiplayerResults(null);
+					setStep(1);
+				}}
+			/>
+		);
+	}
+
+	// 單人模式結算畫面
 	if (finalScore !== null) {
 		return (
 			<ResultPage
@@ -74,17 +94,58 @@ export default function EntryPage() {
 		);
 	}
 
+	// 多人遊戲大廳
 	if (step === 2 && mode === "multiplayer") {
 		return (
 			<MultiplayerLobby
 				theme={theme}
 				onBack={() => setStep(1)}
 				onToggleTheme={toggleTheme}
-				onJoinGame={(nicknameFromLobby) => {
+				onJoinGame={(nicknameFromLobby, socketInstance, settings) => {
 					setNickname(nicknameFromLobby);
+					setSocket(socketInstance);
+					setMultiplayerSettings(settings);
 					console.log("✅ 成功進入多人遊戲，暱稱：", nicknameFromLobby);
-					// 之後 setStep(4) 進入 MultiplayerGamePage
+					setStep(3); // 進入多人遊戲頁面
 				}}
+			/>
+		);
+	}
+
+	// 多人遊戲進行中
+	if (step === 3 && mode === "multiplayer") {
+		return (
+			<GamePage
+				theme={theme}
+				settings={{
+					...multiplayerSettings,
+					isMultiplayer: true,
+					nickname,
+				}}
+				socket={socket}
+				onFinish={(score, playerData) => {
+					// 設置多人遊戲結果
+					setMultiplayerResults({
+						score: score,
+						total: multiplayerSettings?.questions || 10,
+						players: playerData,
+					});
+
+					// 斷開連接
+					if (socket) {
+						socket.disconnect();
+						setSocket(null);
+					}
+				}}
+				onBackToHome={() => {
+					setStep(1);
+					// 斷開連接
+					if (socket) {
+						socket.disconnect();
+						setSocket(null);
+					}
+				}}
+				onToggleTheme={toggleTheme}
 			/>
 		);
 	}
