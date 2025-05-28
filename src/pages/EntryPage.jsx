@@ -74,13 +74,17 @@ export default function EntryPage() {
 		);
 	}
 
-	// 多人模式 - 之後擴充 MultiplayerLobby
 	if (step === 2 && mode === "multiplayer") {
 		return (
 			<MultiplayerLobby
 				theme={theme}
 				onBack={() => setStep(1)}
 				onToggleTheme={toggleTheme}
+				onJoinGame={(nicknameFromLobby) => {
+					setNickname(nicknameFromLobby);
+					console.log("✅ 成功進入多人遊戲，暱稱：", nicknameFromLobby);
+					// 之後 setStep(4) 進入 MultiplayerGamePage
+				}}
 			/>
 		);
 	}

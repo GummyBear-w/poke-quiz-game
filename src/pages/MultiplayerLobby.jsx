@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { Home, Sun, Moon } from "lucide-react";
-
-const socket = io("http://localhost:3000"); // 改為你 render 部署的網址
 
 export default function MultiplayerLobby({
 	theme,
@@ -13,28 +11,65 @@ export default function MultiplayerLobby({
 	const [nickname, setNickname] = useState("");
 	const [players, setPlayers] = useState([]);
 	const [isWaiting, setIsWaiting] = useState(false);
+	const socketRef = useRef(null);
 
+	// First useEffect to initialize socket when component mounts
 	useEffect(() => {
-		socket.on("lobby_update", (data) => {
+		// Create socket connection when component mounts
+		const socket = io(
+			import.meta.env.MODE === "development"
+				? "http://localhost:3001"
+				: "https://poke-quiz-server.onrender.com"
+		);
+		socketRef.current = socket;
+
+		// Clean up on unmount
+		return () => {
+			if (socketRef.current) {
+				socketRef.current.disconnect();
+			}
+		};
+	}, []);
+
+	// Second useEffect to handle socket events
+	useEffect(() => {
+		if (!socketRef.current) return;
+
+		const socket = socketRef.current;
+
+		// Define handlers
+		const handleLobbyUpdate = (data) => {
+			console.log("📥 收到 lobby_update", data);
 			setPlayers(data);
-		});
+		};
 
-		socket.on("game_started", () => {
+		const handleGameStart = () => {
+			console.log("✅ 收到 game_started");
 			onJoinGame(nickname);
-		});
+		};
 
-		return () => socket.disconnect();
-	}, [nickname]);
+		// Add event listeners
+		socket.on("lobby_update", handleLobbyUpdate);
+		socket.on("game_started", handleGameStart);
+
+		// Clean up event listeners
+		return () => {
+			socket.off("lobby_update", handleLobbyUpdate);
+			socket.off("game_started", handleGameStart);
+		};
+	}, [nickname, onJoinGame, socketRef.current]);
 
 	const handleJoin = () => {
-		if (nickname.trim()) {
-			socket.emit("join_lobby", nickname);
+		if (nickname.trim() && socketRef.current) {
+			socketRef.current.emit("join_lobby", nickname);
 			setIsWaiting(true);
 		}
 	};
 
 	const handleStart = () => {
-		socket.emit("start_game");
+		if (socketRef.current) {
+			socketRef.current.emit("start_game");
+		}
 	};
 
 	return (
@@ -79,10 +114,14 @@ export default function MultiplayerLobby({
 				<div className="form-section mt-8">
 					<p className="mb-2">等待其他玩家中：</p>
 					<ul className="text-left">
-						{players.map((p) => (
-							<li key={p.id}>🔸 {p.nickname}</li>
-						))}
+						{players.length > 0 ? (
+							players.map((p) => <li key={p.id}>🗣️ {p.nickname}</li>)
+						) : (
+							<li>等待玩家加入...</li>
+						)}
 					</ul>
+					<p className="mt-2 text-sm">目前玩家數: {players.length}</p>
+
 					<button onClick={handleStart} className="start-button mt-4">
 						開始遊戲
 					</button>
