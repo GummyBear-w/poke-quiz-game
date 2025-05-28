@@ -225,7 +225,7 @@ export default function GamePage({
 				{/* 輸入框 */}
 				<input
 					ref={inputRef}
-					className="w-full p-2 rounded-lg focus:outline-none focus:ring-0 focus:border-transparent 
+					className="w-full p-2 rounded-lg focus:outline-none focus:ring-0 
              text-black dark:text-white bg-white dark:bg-[#1f1f1f] border border-gray-300 dark:border-orange-400"
 					placeholder="請輸入寶可夢名稱"
 					value={userAnswer}

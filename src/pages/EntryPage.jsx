@@ -4,6 +4,8 @@ import { Sun, Moon, ChevronDown } from "lucide-react";
 import GameSetupPage from "./GameSetupPage.jsx";
 import GamePage from "./GamePage.jsx";
 import ResultPage from "./ResultPage.jsx";
+// 多人頁面預留（之後我們會建立）
+import MultiplayerLobby from "./MultiplayerLobby.jsx";
 
 export default function EntryPage() {
 	const [theme, setTheme] = useState("light");
@@ -24,9 +26,10 @@ export default function EntryPage() {
 
 	const handleStart = (settings) => {
 		setGameSettings(settings);
-		setStep(3); // 進入 GamePage
+		setStep(3);
 	};
 
+	// 結算畫面
 	if (finalScore !== null) {
 		return (
 			<ResultPage
@@ -35,13 +38,14 @@ export default function EntryPage() {
 				theme={theme}
 				onRestart={() => {
 					setFinalScore(null);
-					setStep(1); // 回首頁
+					setStep(1);
 				}}
 			/>
 		);
 	}
 
-	if (step === 2) {
+	// 單人遊戲設定頁面
+	if (step === 2 && mode === "quiz") {
 		return (
 			<GameSetupPage
 				theme={theme}
@@ -52,7 +56,8 @@ export default function EntryPage() {
 		);
 	}
 
-	if (step === 3) {
+	// 單人遊戲進行中
+	if (step === 3 && mode === "quiz") {
 		return (
 			<GamePage
 				theme={theme}
@@ -62,13 +67,25 @@ export default function EntryPage() {
 				}}
 				onBackToHome={() => {
 					setFinalScore(null);
-					setStep(1); // 回首頁
+					setStep(1);
 				}}
 				onToggleTheme={toggleTheme}
 			/>
 		);
 	}
 
+	// 多人模式 - 之後擴充 MultiplayerLobby
+	if (step === 2 && mode === "multiplayer") {
+		return (
+			<MultiplayerLobby
+				theme={theme}
+				onBack={() => setStep(1)}
+				onToggleTheme={toggleTheme}
+			/>
+		);
+	}
+
+	// 首頁
 	return (
 		<div className={`entry-page centered ${theme}`}>
 			<div className="top-bar">
@@ -82,22 +99,24 @@ export default function EntryPage() {
 
 			<div className="form-section">
 				<label className="block-label">選擇模式：</label>
-
 				<div
 					className="custom-select"
 					onClick={() => setDropdownOpen(!dropdownOpen)}
 				>
 					<span>
-						{mode
-							? mode === "quiz"
-								? "寶可夢問答大賽"
-								: mode
+						{mode === "quiz"
+							? "寶可夢問答大賽"
+							: mode === "multiplayer"
+							? "多人對戰模式"
 							: "請選擇遊戲模式"}
 					</span>
 					<ChevronDown size={16} />
 					{dropdownOpen && (
 						<ul className="custom-select-options">
 							<li onClick={() => handleModeSelect("quiz")}>寶可夢問答大賽</li>
+							<li onClick={() => handleModeSelect("multiplayer")}>
+								多人對戰模式
+							</li>
 						</ul>
 					)}
 				</div>
