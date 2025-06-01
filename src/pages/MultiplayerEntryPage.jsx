@@ -1,35 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { Home, Sun, Moon, Plus, LogIn, Loader } from "lucide-react";
-
-// 共享房間信息 - 確保正確導出
-export const lastValidatedRoom = {
-	roomCode: "",
-	nickname: "",
-	isCreator: false,
-};
-
-// 輔助函數: 保存房間數據
-export function saveRoomData(data) {
-	Object.assign(lastValidatedRoom, data);
-
-	try {
-		// 同時保存到 sessionStorage 作為備份
-		sessionStorage.setItem("roomCode", data.roomCode || "");
-		sessionStorage.setItem("nickname", data.nickname || "");
-		sessionStorage.setItem("isCreator", String(data.isCreator || false));
-	} catch (e) {
-		console.error("無法保存到 sessionStorage", e);
-	}
-
-	console.log("已更新房間數據:", lastValidatedRoom);
-}
-
-// 輔助函數: 獲取有效的房間代碼
-export function getRoomCode() {
-	// 從多處獲取房間代碼，以確保可靠性
-	return lastValidatedRoom.roomCode || sessionStorage.getItem("roomCode") || "";
-}
+import * as RoomManager from "../utils/roomManager";
 
 export default function MultiplayerEntryPage({
 	theme,
@@ -44,6 +16,33 @@ export default function MultiplayerEntryPage({
 	const [error, setError] = useState("");
 	const [isValidating, setIsValidating] = useState(false);
 	const [validationSocket, setValidationSocket] = useState(null);
+	const [roomData, setRoomData] = useState(RoomManager.getRoomData());
+
+	// 监听全局房间状态变化
+	useEffect(() => {
+		const removeListener = RoomManager.addListener((data) => {
+			setRoomData(data);
+		});
+
+		return () => removeListener();
+	}, []);
+
+	// 頁面載入時檢查並清除過期的房間數據
+	useEffect(() => {
+		const savedRoom = RoomManager.getRoomData();
+
+		// 如果數據存在但超過1小時，則清除
+		if (savedRoom.lastUpdated) {
+			const lastUpdate = new Date(savedRoom.lastUpdated);
+			const oneHourAgo = new Date();
+			oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+			if (lastUpdate < oneHourAgo) {
+				console.log("清除過期的房間數據");
+				RoomManager.clearRoomData();
+			}
+		}
+	}, []);
 
 	// 初始化驗證用socket連接
 	useEffect(() => {
@@ -67,17 +66,16 @@ export default function MultiplayerEntryPage({
 
 				if (data.exists) {
 					if (data.nicknameAvailable) {
-						// 存儲已驗證的房間信息
 						const formattedRoomCode = roomCode.trim().toUpperCase();
 
-						// 保存房間信息
-						saveRoomData({
+						// 重要：保存数据到Room Manager
+						RoomManager.saveRoomData({
 							roomCode: formattedRoomCode,
 							nickname: nickname,
 							isCreator: false,
 						});
 
-						console.log("已存儲驗證通過的房間信息:", lastValidatedRoom);
+						console.log("已存儲驗證通過的房間信息:", formattedRoomCode);
 
 						// 房間存在且昵稱可用，可以加入
 						onJoinRoom(nickname, formattedRoomCode);
@@ -109,12 +107,11 @@ export default function MultiplayerEntryPage({
 				setValidationSocket(null);
 			};
 		}
-	}, [nicknameEntered]);
+	}, [nicknameEntered, nickname, roomCode, onJoinRoom]);
 
 	// 後備超時機制
 	useEffect(() => {
 		let timeoutId;
-
 		if (isValidating) {
 			// 如果5秒後還在驗證中，自動重置狀態
 			timeoutId = setTimeout(() => {
@@ -141,14 +138,14 @@ export default function MultiplayerEntryPage({
 	};
 
 	const handleCreateRoom = () => {
-		// 在創建房間時設置共享數據
-		saveRoomData({
+		// 重要：清除舊的房間信息，設置新的
+		RoomManager.saveRoomData({
 			roomCode: "", // 房間代碼由服務器生成
 			nickname: nickname,
 			isCreator: true, // 標記為創建者
 		});
 
-		console.log("創建房間時設置用戶資訊:", lastValidatedRoom);
+		console.log("創建房間時設置用戶資訊:", RoomManager.getRoomData());
 
 		// 調用傳入的 onCreateRoom 函數
 		onCreateRoom(nickname);
@@ -163,14 +160,14 @@ export default function MultiplayerEntryPage({
 		const formattedRoomCode = roomCode.trim().toUpperCase();
 
 		if (skipValidation) {
-			// 直接加入前存儲房間信息
-			saveRoomData({
+			// 直接保存房間信息
+			RoomManager.saveRoomData({
 				roomCode: formattedRoomCode,
 				nickname: nickname,
 				isCreator: false,
 			});
 
-			console.log("跳過驗證，直接存儲房間信息:", lastValidatedRoom);
+			console.log("跳過驗證，直接存儲房間信息:", RoomManager.getRoomData());
 
 			// 跳過驗證直接加入
 			onJoinRoom(nickname, formattedRoomCode);
@@ -192,8 +189,8 @@ export default function MultiplayerEntryPage({
 			console.log("驗證socket未連接，直接加入");
 			setIsValidating(false);
 
-			// 仍然存儲信息
-			saveRoomData({
+			// 仍然保存房間信息
+			RoomManager.saveRoomData({
 				roomCode: formattedRoomCode,
 				nickname: nickname,
 				isCreator: false,
@@ -321,14 +318,19 @@ export default function MultiplayerEntryPage({
 				)}
 
 				{/* 調試信息 */}
-				{import.meta.env.DEV && (
-					<div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
-						<div>已驗證房間: {lastValidatedRoom.roomCode || "無"}</div>
-						<div>玩家昵稱: {lastValidatedRoom.nickname || "無"}</div>
-						<div>是創建者: {lastValidatedRoom.isCreator ? "是" : "否"}</div>
-						<div>Session: {sessionStorage.getItem("roomCode") || "無"}</div>
+				<div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
+					<div>全局房間: {roomData.roomCode || "無"}</div>
+					<div>全局暱稱: {roomData.nickname || "無"}</div>
+					<div>全局創建者: {roomData.isCreator ? "是" : "否"}</div>
+					<div>
+						本地存儲房間:{" "}
+						{localStorage.getItem("pokemonGameRoomData")
+							? JSON.parse(localStorage.getItem("pokemonGameRoomData")).roomCode
+							: "無"}
 					</div>
-				)}
+					<div>當前輸入房間: {roomCode || "無"}</div>
+					<div>驗證狀態: {isValidating ? "正在驗證" : "閒置"}</div>
+				</div>
 			</div>
 		</div>
 	);
