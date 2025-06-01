@@ -3,12 +3,11 @@ import "../styles/entry.css";
 import { ArrowLeft, Sun, Moon } from "lucide-react";
 
 export default function GameSetupPage({ theme, onBack, onStart, toggleTheme }) {
-	const [players, setPlayers] = useState(1);
 	const [questions, setQuestions] = useState(5);
 	const [timer, setTimer] = useState(5);
 
 	const startGame = () => {
-		const settings = { players, questions, timer };
+		const settings = { questions, timer };
 		onStart(settings); // 回傳給 EntryPage
 	};
 
@@ -36,15 +35,6 @@ export default function GameSetupPage({ theme, onBack, onStart, toggleTheme }) {
 			</div>
 
 			<div className="form-section">
-				<label className="block-label">玩家人數：{players} 人</label>
-				<input
-					type="range"
-					min={1}
-					max={4}
-					value={players}
-					onChange={(e) => setPlayers(Number(e.target.value))}
-				/>
-
 				<label className="block-label">題目數量：{questions} 題</label>
 				<input
 					type="range"

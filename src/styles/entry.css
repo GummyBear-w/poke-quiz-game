@@ -236,3 +236,12 @@ input::placeholder {
 	color: white;
 }
 
+input:focus {
+	outline: none;
+	box-shadow: none;
+	border-color: rgb(247, 148, 72);
+}
+
+.padding-05 {
+    margin-top: 0.6rem;
+}
