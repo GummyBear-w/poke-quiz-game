@@ -20,6 +20,7 @@ export default function EntryPage() {
 	const [multiplayerResults, setMultiplayerResults] = useState(null);
 	const [roomCode, setRoomCode] = useState("");
 	const [isRoomCreator, setIsRoomCreator] = useState(false);
+	const [gameHasEnded, setGameHasEnded] = useState(false);
 
 	const toggleTheme = () => {
 		if (theme === "light") {
@@ -44,20 +45,18 @@ export default function EntryPage() {
 	const handleCreateRoom = (nickname) => {
 		setNickname(nickname);
 		setIsRoomCreator(true);
-		// 生成隨機房間代碼 (6位英文數字組合)
 		const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 		setRoomCode(randomCode);
-		setStep(3); // 進入房間大廳
+		setStep(3);
 	};
 
 	const handleJoinRoom = (nickname, roomCode) => {
 		setNickname(nickname);
 		setRoomCode(roomCode);
 		setIsRoomCreator(false);
-		setStep(3); // 進入房間大廳
+		setStep(3);
 	};
 
-	// 多人模式結算畫面
 	if (multiplayerResults !== null) {
 		return (
 			<ResultPage
@@ -69,12 +68,18 @@ export default function EntryPage() {
 				onRestart={() => {
 					setMultiplayerResults(null);
 					setStep(1);
+					setGameHasEnded(false);
+
+					// ✅ 加上這段：在遊戲結束畫面按返回時斷開 socket
+					if (socket) {
+						socket.disconnect();
+						setSocket(null);
+					}
 				}}
 			/>
 		);
 	}
 
-	// 單人模式結算畫面
 	if (finalScore !== null) {
 		return (
 			<ResultPage
@@ -89,7 +94,6 @@ export default function EntryPage() {
 		);
 	}
 
-	// 單人遊戲設定頁面
 	if (step === 2 && mode === "quiz") {
 		return (
 			<GameSetupPage
@@ -101,7 +105,6 @@ export default function EntryPage() {
 		);
 	}
 
-	// 單人遊戲進行中
 	if (step === 3 && mode === "quiz") {
 		return (
 			<GamePage
@@ -119,7 +122,6 @@ export default function EntryPage() {
 		);
 	}
 
-	// 多人遊戲入口頁面
 	if (step === 2 && mode === "multiplayer") {
 		return (
 			<MultiplayerEntryPage
@@ -132,35 +134,32 @@ export default function EntryPage() {
 		);
 	}
 
-	// 多人遊戲房間大廳
 	if (step === 3 && mode === "multiplayer") {
 		return (
 			<MultiplayerLobby
 				theme={theme}
-				onBack={() => setStep(2)} // 返回到多人入口頁面，而非首頁
+				onBack={() => setStep(2)}
 				onToggleTheme={toggleTheme}
 				nickname={nickname}
 				roomCode={roomCode}
-				isCreator={isRoomCreator} // 確保這個屬性名稱與 MultiplayerLobby 組件接受的一致
+				isCreator={isRoomCreator}
 				onJoinGame={(
 					nicknameFromLobby,
 					socketInstance,
 					settings,
 					roomCodeFromLobby
 				) => {
-					// 確保所有參數都正確傳遞
 					setNickname(nicknameFromLobby || nickname);
 					setSocket(socketInstance);
 					setMultiplayerSettings(settings);
 					setRoomCode(roomCodeFromLobby || roomCode);
 					console.log("進入遊戲頁面", settings);
-					setStep(4); // 進入遊戲頁面
+					setStep(4);
 				}}
 			/>
 		);
 	}
 
-	// 多人遊戲進行中
 	if (step === 4 && mode === "multiplayer") {
 		return (
 			<GamePage
@@ -173,22 +172,16 @@ export default function EntryPage() {
 				}}
 				socket={socket}
 				onFinish={(score, playerData) => {
-					// 設置多人遊戲結果
+					// 不要馬上斷線，讓結果頁面繼續使用 socket
 					setMultiplayerResults({
 						score: score,
 						total: multiplayerSettings?.questions || 10,
 						players: playerData,
 					});
-
-					// 斷開連接
-					if (socket) {
-						socket.disconnect();
-						setSocket(null);
-					}
 				}}
 				onBackToHome={() => {
 					setStep(1);
-					// 斷開連接
+					// 這裡允許斷線
 					if (socket) {
 						socket.disconnect();
 						setSocket(null);
@@ -199,7 +192,6 @@ export default function EntryPage() {
 		);
 	}
 
-	// 首頁
 	return (
 		<div className={`entry-page centered ${theme}`}>
 			<div className="top-bar">
