@@ -132,9 +132,14 @@ export default function GamePage({
 			}
 		};
 
+		// 在 GamePage.jsx 中修改 handleGameOver 函數
 		const handleGameOver = (data) => {
-			// 遊戲結束
-			onFinish(data.players.find((p) => p.id === socket.id)?.score || 0);
+			console.log("遊戲結束接收到數據:", data);
+
+			// 確保完整傳遞數據，而不只是分數
+			if (onFinish) {
+				onFinish(data);
+			}
 		};
 
 		socket.on("game_question", handleGameQuestion);
@@ -436,13 +441,10 @@ export default function GamePage({
 						return (
 							<div
 								key={b.id}
-								className={`absolute px-4 py-2 text-base font-semibold rounded-full shadow-lg
-                ${
-									b.correct
-										? "bg-yellow-400 bg-opacity-80 text-white"
-										: "bg-orange-600 bg-opacity-80 text-white"
-								}`}
+								className={`absolute px-4 py-2 text-base font-semibold rounded-full shadow-lg`}
 								style={{
+									backgroundColor: b.correct ? "#facc15" : "#f97316", // 對應 Tailwind 的 yellow-400 / orange-500
+									color: "white",
 									top: `${b.top}%`,
 									left: `${b.left}%`,
 									animation: `floatBubble-${b.id} ${b.duration}s ease-in-out infinite`,
