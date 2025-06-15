@@ -67,11 +67,12 @@ export default function GamePage({
 	}, [questionIndex, isMultiplayer]);
 
 	// 多人模式邏輯
+	// 多人模式邏輯
 	useEffect(() => {
-		if (!isMultiplayer || !socket) return; // 單人模式跳過此邏輯
+		if (!isMultiplayer || !socket) return;
 
-		// 監聽伺服器事件
 		const handleGameQuestion = (data) => {
+			console.log("[DEBUG] 收到新題目:", data);
 			setImageLoading(true);
 			setHasAnswered(false);
 			processingRef.current = false;
@@ -79,6 +80,7 @@ export default function GamePage({
 			setAnswerBubbles([]);
 			setShowCorrectAnswer(false);
 			setCorrectAnswer("");
+			setIsCorrect(false);
 
 			setPokemon({
 				img: data.imageUrl,
@@ -90,11 +92,16 @@ export default function GamePage({
 			setQuestionIndex(data.questionNumber - 1);
 			setTimeLeft(data.timeRemaining);
 
-			// 聚焦輸入框
-			setTimeout(() => inputRef.current?.focus(), 100);
+			setTimeout(() => {
+				if (inputRef.current) {
+					inputRef.current.focus();
+					console.log("[DEBUG] 輸入框已聚焦");
+				}
+			}, 100);
 		};
 
 		const handleGameUpdate = (data) => {
+			console.log("[DEBUG] 遊戲更新:", data);
 			setPlayers(data.players);
 		};
 
@@ -103,13 +110,57 @@ export default function GamePage({
 		};
 
 		const handleShowAnswer = (data) => {
+			console.log("[DEBUG] 顯示答案:", data);
+
+			// 立即停止所有互動
 			setHasAnswered(true);
 			setShowCorrectAnswer(true);
 			setCorrectAnswer(data.correctAnswer);
+			setTimeLeft(0);
+
+			// 如果有答對者信息，顯示誰答對了
+			if (data.answeredBy) {
+				const isMe = players.find(
+					(p) => p.nickname === data.answeredBy && p.id === socket.id
+				);
+
+				if (isMe) {
+					// 如果是自己答對的
+					setIsCorrect(true);
+					console.log("[DEBUG] 我答對了這題!");
+				} else {
+					// 如果是其他玩家答對的
+					setIsCorrect(false); // 不顯示"答對了"而是顯示"正解"
+					console.log(`[DEBUG] ${data.answeredBy} 答對了這題`);
+
+					// 可以選擇添加一個提示消息
+					setAnswerBubbles((prev) => [
+						...prev,
+						{
+							id: Date.now() + 9999,
+							text: `${data.answeredBy} 答對了!`,
+							correct: true,
+							top: 40,
+							left: 50,
+							dx: 0,
+							dy: 0,
+							duration: 2,
+						},
+					]);
+				}
+			}
 		};
 
 		const handlePlayerAnswered = (data) => {
-			// 顯示其他玩家的回答
+			console.log(
+				"[DEBUG] 玩家回答:",
+				data.nickname,
+				"答案:",
+				data.answer,
+				"正確:",
+				data.correct
+			);
+
 			if (data.playerId !== socket.id) {
 				setAnswerBubbles((prev) => [
 					...prev,
@@ -125,16 +176,18 @@ export default function GamePage({
 					},
 				]);
 			}
-
-			// 如果是自己答對了
-			if (data.playerId === socket.id && data.correct) {
-				setIsCorrect(true);
-			}
 		};
 
 		const handleGameOver = (data) => {
-			// 遊戲結束
-			onFinish(data.players.find((p) => p.id === socket.id)?.score || 0);
+			console.log("[DEBUG] 遊戲結束接收到數據:", data);
+			if (onFinish) {
+				onFinish(data);
+			}
+		};
+
+		// 新增處理下一題的事件
+		const handleNextQuestion = () => {
+			console.log("[DEBUG] 收到下一題事件");
 		};
 
 		socket.on("game_question", handleGameQuestion);
@@ -151,6 +204,7 @@ export default function GamePage({
 			socket.off("show_answer", handleShowAnswer);
 			socket.off("player_answered", handlePlayerAnswered);
 			socket.off("game_over", handleGameOver);
+			socket.off("next_question", handleNextQuestion); // 移除 next_question 事件監聽
 		};
 	}, [isMultiplayer, socket]);
 
@@ -250,6 +304,12 @@ export default function GamePage({
 				},
 			]);
 
+			// 如果自己答對了，立即顯示視覺反饋（但不切換題目）
+			// 實際的答對處理在 handlePlayerAnswered 函數中
+			if (acceptedAnswers.includes(input)) {
+				processingRef.current = true; // 防止重複提交
+			}
+
 			setUserAnswer("");
 			setTimeout(() => inputRef.current?.focus(), 300);
 		} else {
@@ -324,7 +384,12 @@ export default function GamePage({
 			{/* 多人遊戲排行榜 */}
 			{isMultiplayer && showScoreboard && (
 				<div className="w-full max-w-md mb-4 rounded-lg overflow-hidden shadow-lg bg-white dark:bg-gray-800">
-					<div className="p-3 bg-amber-500 dark:bg-orange-600 text-white">
+					<div
+						className="p-3 text-white"
+						style={{
+							backgroundColor: theme === "dark" ? "#ea580c" : "#f59e0b",
+						}}
+					>
 						<h3 className="font-bold text-center">玩家排行榜</h3>
 					</div>
 					<div className="p-2">
@@ -340,13 +405,21 @@ export default function GamePage({
 									}`}
 								>
 									<div className="flex items-center">
-										<span className="mr-2">{index + 1}.</span>
-										<span>{player.nickname}</span>
+										<span className="mr-2 text-black dark:text-white">
+											{index + 1}.
+										</span>
+										<span className="text-black dark:text-white">
+											{player.nickname}
+										</span>
 										{player.id === socket.id && (
-											<span className="ml-1">(你)</span>
+											<span className="ml-1 text-black dark:text-white">
+												(你)
+											</span>
 										)}
 									</div>
-									<span>{player.score} 分</span>
+									<span className="text-black dark:text-white">
+										{player.score} 分
+									</span>
 								</div>
 							))}
 					</div>
@@ -436,13 +509,10 @@ export default function GamePage({
 						return (
 							<div
 								key={b.id}
-								className={`absolute px-4 py-2 text-base font-semibold rounded-full shadow-lg
-                ${
-									b.correct
-										? "bg-yellow-400 bg-opacity-80 text-white"
-										: "bg-orange-600 bg-opacity-80 text-white"
-								}`}
+								className={`absolute px-4 py-2 text-base font-semibold rounded-full shadow-lg`}
 								style={{
+									backgroundColor: b.correct ? "#facc15" : "#f97316", // 對應 Tailwind 的 yellow-400 / orange-500
+									color: "white",
 									top: `${b.top}%`,
 									left: `${b.left}%`,
 									animation: `floatBubble-${b.id} ${b.duration}s ease-in-out infinite`,

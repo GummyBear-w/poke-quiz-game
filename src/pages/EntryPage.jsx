@@ -57,25 +57,88 @@ export default function EntryPage() {
 		setStep(3);
 	};
 
+	// 定義所需函數
+	const handleBackToHome = () => {
+		// 回到主選單
+		setMultiplayerResults(null);
+		if (socket) {
+			socket.disconnect();
+			setSocket(null);
+		}
+		setStep(1);
+	};
+
+	const handleToggleTheme = () => {
+		toggleTheme();
+	};
+
+	const handleRestart = () => {
+		// 重新開始遊戲
+		setMultiplayerResults(null);
+		// 如果是多人模式，回到遊戲大廳
+		if (mode === "multiplayer") {
+			setStep(3);
+		} else {
+			setStep(1);
+		}
+	};
+	// 在 EntryPage.jsx 中，添加調試代碼
 	if (multiplayerResults !== null) {
+		console.log("多人遊戲結果:", multiplayerResults);
+		console.log("結果中的玩家數據:", multiplayerResults?.players);
+
+		// 數據預處理：添加排名信息
+		let processedResults = { ...multiplayerResults };
+
+		if (processedResults.players && Array.isArray(processedResults.players)) {
+			// 按分數排序玩家
+			let sortedPlayers = [...processedResults.players].sort(
+				(a, b) => b.score - a.score
+			);
+
+			// 添加排名
+			sortedPlayers = sortedPlayers.map((player, index) => {
+				// 處理相同分數的情況
+				let rank = index + 1;
+				if (index > 0 && player.score === sortedPlayers[index - 1].score) {
+					rank = sortedPlayers[index - 1].rank; // 相同分數，相同排名
+				}
+				return { ...player, rank };
+			});
+
+			// 找出勝利者
+			const winner = sortedPlayers.length > 0 ? sortedPlayers[0] : null;
+
+			// 更新處理後的結果
+			processedResults.players = sortedPlayers;
+			processedResults.winner = winner;
+
+			console.log("處理後的數據:", processedResults);
+		} else {
+			console.error("玩家數據異常:", processedResults.players);
+		}
+
+		// 使用處理後的數據渲染結果頁面
 		return (
 			<ResultPage
-				score={multiplayerResults.score}
-				total={multiplayerResults.total}
-				theme={theme}
-				isMultiplayer={true}
-				playerRanking={multiplayerResults.players}
 				onRestart={() => {
 					setMultiplayerResults(null);
+					setStep(3); // 返回到多人遊戲大廳
+				}}
+				onBackToHome={() => {
+					setMultiplayerResults(null);
 					setStep(1);
-					setGameHasEnded(false);
-
-					// ✅ 加上這段：在遊戲結束畫面按返回時斷開 socket
 					if (socket) {
 						socket.disconnect();
 						setSocket(null);
 					}
 				}}
+				onToggleTheme={toggleTheme}
+				theme={theme}
+				result={processedResults} // 使用處理後的數據
+				socket={socket}
+				isMultiplayer={true}
+				isHost={isRoomCreator}
 			/>
 		);
 	}
@@ -162,6 +225,7 @@ export default function EntryPage() {
 
 	if (step === 4 && mode === "multiplayer") {
 		return (
+			// 在 EntryPage.jsx 中，修改 step 4 的 GamePage 組件
 			<GamePage
 				theme={theme}
 				settings={{
@@ -171,17 +235,21 @@ export default function EntryPage() {
 					roomCode,
 				}}
 				socket={socket}
-				onFinish={(score, playerData) => {
-					// 不要馬上斷線，讓結果頁面繼續使用 socket
-					setMultiplayerResults({
-						score: score,
-						total: multiplayerSettings?.questions || 10,
-						players: playerData,
-					});
+				onFinish={(data) => {
+					console.log("多人遊戲結束，接收到結果:", data);
+
+					// 確保保存完整的數據結構
+					setMultiplayerResults(data);
+
+					// 在開發環境中添加額外日誌
+					if (data?.players) {
+						console.log(`接收到 ${data.players.length} 名玩家的數據`);
+					} else {
+						console.error("沒有接收到玩家數據!");
+					}
 				}}
 				onBackToHome={() => {
 					setStep(1);
-					// 這裡允許斷線
 					if (socket) {
 						socket.disconnect();
 						setSocket(null);
