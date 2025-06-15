@@ -157,10 +157,11 @@ export default function MultiplayerLobby({
 				? "http://localhost:3001"
 				: "https://poke-quiz-server.onrender.com",
 			{
-				forceNew: true, // 強制創建新連接
-				reconnection: true, // 允許自動重連
-				reconnectionAttempts: 5, // 最多嘗試5次
-				reconnectionDelay: 1000, // 延遲1秒嘗試
+				transports: ["websocket"], // 強制只用 WebSocket
+				reconnection: true, // 自動重連
+				reconnectionAttempts: 5, // 最多重連5次
+				reconnectionDelay: 2000, // 每次間隔2秒
+				timeout: 10000, // 等待最多10秒才 timeout
 			}
 		);
 
@@ -610,7 +611,6 @@ export default function MultiplayerLobby({
 						只有房主可以開始遊戲
 					</p>
 				)}
-
 			</div>
 		</div>
 	);
