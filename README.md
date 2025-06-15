@@ -2,15 +2,9 @@
 This project is for academic and personal learning purposes only. It demonstrates integration with public Web APIs, frontend development, and real-time multiplayer features using Socket.IO.
 
 All Pokémon images and related content used in this project are copyrighted by Nintendo, GAME FREAK, and Creatures Inc. The content is included for educational demonstration only and is not intended for commercial use. If there are any concerns, please contact me for removal or modification.
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### 單人遊戲 demo 影片
+<video src="https://github.com/GummyBear-w/poke-quiz-game/raw/main/img/%E5%96%AE%E4%BA%BA%E9%81%8A%E6%88%B2%E7%95%AB%E9%9D%A2.mp4" controls width="750"></video>
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 多人遊戲 demo 影片
+<video src="https://github.com/GummyBear-w/poke-quiz-game/raw/main/img/%E5%A4%9A%E4%BA%BA%E9%81%8A%E6%88%B2%E7%95%AB%E9%9D%A2.mp4" controls width="750"></video>
