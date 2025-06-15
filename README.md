@@ -5,8 +5,8 @@ All Pokémon images and related content used in this project are copyrighted by 
 
 
 ### 單人遊戲 demo 影片
-[點我觀看單人遊戲 demo](https://drive.google.com/file/d/1CIOjMOTnWaR5rA_cRx1FpFQu_gNVVffS/view?usp=drive_link)
+[點我觀看單人遊戲 demo]([https://drive.google.com/file/d/1CIOjMOTnWaR5rA_cRx1FpFQu_gNVVffS/view?usp=drive_link](https://drive.google.com/file/d/1CIOjMOTnWaR5rA_cRx1FpFQu_gNVVffS/view?usp=sharing))
 
 ### 多人遊戲 demo 影片
-[點我觀看多人遊戲 demo](https://drive.google.com/file/d/1E9y-olWkzhJKB5_LtUiVUWtGRqsFxj6s/view?usp=drive_link)
+[點我觀看多人遊戲 demo]([https://drive.google.com/file/d/1E9y-olWkzhJKB5_LtUiVUWtGRqsFxj6s/view?usp=drive_link](https://drive.google.com/file/d/1E9y-olWkzhJKB5_LtUiVUWtGRqsFxj6s/view?usp=sharing))
 
