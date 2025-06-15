@@ -273,21 +273,6 @@ export default function GamePage({
 				answer: userAnswer.trim(),
 			});
 
-			// 顯示自己的答案泡泡
-			const id = Date.now();
-			setAnswerBubbles((prev) => [
-				...prev,
-				{
-					id,
-					text: nickname + ": " + userAnswer.trim(),
-					correct: acceptedAnswers.includes(input),
-					top: Math.random() * 85,
-					left: Math.random() * 85,
-					dx: Math.random() * 85 - 50,
-					dy: Math.random() * 85 - 50,
-					duration: 6 + Math.random() * 2,
-				},
-			]);
 
 			// 如果自己答對了，立即顯示視覺反饋（但不切換題目）
 			// 實際的答對處理在 handlePlayerAnswered 函數中
