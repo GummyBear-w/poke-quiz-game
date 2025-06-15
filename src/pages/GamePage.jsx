@@ -161,7 +161,10 @@ export default function GamePage({
 				data.correct
 			);
 
-			if (data.playerId !== socket.id) {
+			const handlePlayerAnswered = (data) => {
+				console.log("[DEBUG] 玩家回答:", data);
+
+				// 顯示答案泡泡（不管是不是自己）
 				setAnswerBubbles((prev) => [
 					...prev,
 					{
@@ -175,7 +178,15 @@ export default function GamePage({
 						duration: 6 + Math.random() * 2,
 					},
 				]);
-			}
+
+				// 如果是自己且答對
+				if (data.playerId === socket.id && data.correct) {
+					processingRef.current = true;
+					setHasAnswered(true);
+					setIsCorrect(true);
+					setShowCorrectAnswer(true);
+				}
+			};
 		};
 
 		const handleGameOver = (data) => {
