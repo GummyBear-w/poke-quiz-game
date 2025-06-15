@@ -137,41 +137,30 @@ export default function GamePage({
 		};
 
 		const handlePlayerAnswered = (data) => {
-			console.log(
-				"[DEBUG] 玩家回答:",
-				data.nickname,
-				"答案:",
-				data.answer,
-				"正確:",
-				data.correct
-			);
+			console.log("[DEBUG] 玩家回答:", data);
 
-			const handlePlayerAnswered = (data) => {
-				console.log("[DEBUG] 玩家回答:", data);
+			// 顯示答案泡泡（不管是不是自己）
+			setAnswerBubbles((prev) => [
+				...prev,
+				{
+					id: Date.now(),
+					text: data.nickname + ": " + data.answer,
+					correct: data.correct,
+					top: Math.random() * 85,
+					left: Math.random() * 85,
+					dx: Math.random() * 85 - 50,
+					dy: Math.random() * 85 - 50,
+					duration: 6 + Math.random() * 2,
+				},
+			]);
 
-				// 顯示答案泡泡（不管是不是自己）
-				setAnswerBubbles((prev) => [
-					...prev,
-					{
-						id: Date.now(),
-						text: data.nickname + ": " + data.answer,
-						correct: data.correct,
-						top: Math.random() * 85,
-						left: Math.random() * 85,
-						dx: Math.random() * 85 - 50,
-						dy: Math.random() * 85 - 50,
-						duration: 6 + Math.random() * 2,
-					},
-				]);
-
-				// 如果是自己且答對
-				if (data.playerId === socket.id && data.correct) {
-					processingRef.current = true;
-					setHasAnswered(true);
-					setIsCorrect(true);
-					setShowCorrectAnswer(true);
-				}
-			};
+			// 如果是自己且答對
+			if (data.playerId === socket.id && data.correct) {
+				processingRef.current = true;
+				setHasAnswered(true);
+				setIsCorrect(true);
+				setShowCorrectAnswer(true);
+			}
 		};
 
 		const handleGameOver = (data) => {
