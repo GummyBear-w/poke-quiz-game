@@ -161,8 +161,6 @@ export default function MultiplayerLobby({
 				reconnection: true, // 允許自動重連
 				reconnectionAttempts: 5, // 最多嘗試5次
 				reconnectionDelay: 1000, // 延遲1秒嘗試
-				timeout: 10000, // 連接超時10秒
-				transports: ["websocket"], // 僅使用WebSocket
 			}
 		);
 
