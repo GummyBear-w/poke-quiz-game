@@ -290,7 +290,7 @@ export default function MultiplayerEntryPage({
 								{error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
 								<button
-									onClick={() => handleJoinRoom(false)}
+									onClick={() => handleJoinRoom(true)}
 									className="start-button w-full py-2 bg-gray-300 hover:bg-gray-400 dark:bg-orange-600 dark:hover:bg-orange-700 text-black dark:text-black font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed mb-2"
 									disabled={!roomCode.trim() || isValidating}
 								>
