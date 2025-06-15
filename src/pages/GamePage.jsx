@@ -132,21 +132,6 @@ export default function GamePage({
 					// 如果是其他玩家答對的
 					setIsCorrect(false); // 不顯示"答對了"而是顯示"正解"
 					console.log(`[DEBUG] ${data.answeredBy} 答對了這題`);
-
-					// 可以選擇添加一個提示消息
-					setAnswerBubbles((prev) => [
-						...prev,
-						{
-							id: Date.now() + 9999,
-							text: `${data.answeredBy} 答對了!`,
-							correct: true,
-							top: 40,
-							left: 50,
-							dx: 0,
-							dy: 0,
-							duration: 2,
-						},
-					]);
 				}
 			}
 		};
