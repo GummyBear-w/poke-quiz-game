@@ -205,7 +205,9 @@ export default function ResultPage({
 							{winner.nickname}
 							{isCurrentUser(winner.id) && " (你)"}
 						</div>
-
+						<div className="text-lg mt-1 text-amber-700 dark:text-amber-400">
+							{winner.score} 分
+						</div>
 					</div>
 				)}
 
@@ -214,7 +216,7 @@ export default function ResultPage({
 					<div
 						className="p-3 bg-amber-500 dark:bg-orange-600 text-white"
 						style={{
-							backgroundColor: theme === "dark" ? "#f59e0b" : "#f59e0b",
+							backgroundColor: theme === "dark" ? "#f59e0b" : "grey",
 						}}
 					>
 						<h3 className="font-bold text-center">最終排名</h3>

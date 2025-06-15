@@ -613,27 +613,6 @@ export default function MultiplayerLobby({
 					</p>
 				)}
 
-				{/* 調試信息 */}
-				<div className="mt-4 text-xs text-gray-500 border-t pt-2">
-					<div>Socket ID: {socketRef.current?.id || "未連接"}</div>
-					<div>連接狀態: {getConnectionStatus()}</div>
-					<div>房間代碼: {roomCode || "未知"}</div>
-					<div>玩家數: {totalPlayers}</div>
-					<div>是房主: {isHost ? "是" : "否"}</div>
-					<div>
-						自動重試次數: {autoRetryCountRef.current}/{maxAutoRetries}
-					</div>
-					<div>房間已創建: {roomCreatedRef.current ? "是" : "否"}</div>
-					<div>
-						RoomManager狀態: {JSON.stringify(RoomManager.getRoomData())}
-					</div>
-					<button
-						onClick={handleReconnect}
-						className="mt-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
-					>
-						手動重新連接
-					</button>
-				</div>
 			</div>
 		</div>
 	);

@@ -255,7 +255,7 @@ export default function MultiplayerEntryPage({
 							<div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md">
 								<h3
 									className="font-bold mb-2 flex items-center dark:text-white"
-									style={theme === "dark" ? { color: "#FFF" } : {}}
+									style={theme === "dark" ? { color: "black" } : {}}
 								>
 									<Plus size={18} className="mr-2" /> 創建房間
 								</h3>
@@ -273,7 +273,7 @@ export default function MultiplayerEntryPage({
 							<div className="bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md">
 								<h3
 									className="font-bold mb-2 flex items-center dark:text-white"
-									style={theme === "dark" ? { color: "#FFF" } : {}}
+									style={theme === "dark" ? { color: "black" } : {}}
 								>
 									<LogIn size={18} className="mr-2" /> 加入房間
 								</h3>
@@ -316,21 +316,6 @@ export default function MultiplayerEntryPage({
 						</div>
 					</>
 				)}
-
-				{/* 調試信息 */}
-				<div className="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t pt-2">
-					<div>全局房間: {roomData.roomCode || "無"}</div>
-					<div>全局暱稱: {roomData.nickname || "無"}</div>
-					<div>全局創建者: {roomData.isCreator ? "是" : "否"}</div>
-					<div>
-						本地存儲房間:{" "}
-						{localStorage.getItem("pokemonGameRoomData")
-							? JSON.parse(localStorage.getItem("pokemonGameRoomData")).roomCode
-							: "無"}
-					</div>
-					<div>當前輸入房間: {roomCode || "無"}</div>
-					<div>驗證狀態: {isValidating ? "正在驗證" : "閒置"}</div>
-				</div>
 			</div>
 		</div>
 	);
